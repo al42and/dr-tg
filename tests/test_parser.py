@@ -120,3 +120,17 @@ class ParserTestCase(unittest.TestCase):
         self.set_html('pages/spoiler_2.html')
         result = self.parser.parse()
         self.assertEqual(result['new_spoiler'], True)
+
+    def test_parse_message(self):
+        self.set_html('pages/code_1.html')
+        result = self.parser.parse()
+        self.assertEqual(result['message'], '')
+
+        self.set_html('pages/sysmsg_no_bold.html')
+        result = self.parser.parse()
+        self.assertEqual(result['message'],
+                         'Вы нашли все основные коды. Вы можете продолжать искать бонусные коды или перейти на следующий уровень.')
+
+        self.set_html('pages/sysmsg_bold.html')
+        result = self.parser.parse()
+        self.assertEqual(result['message'], 'Код принят.')

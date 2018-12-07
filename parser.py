@@ -122,14 +122,14 @@ class Parser(object):
         return result
 
     def _parse_message(self):
-        if not self.g.doc.select('//div[@class="sysmsg"]//b').exists():
-            return {
-                'message': ''
-            }
-        message = self.g.doc.select('//div[@class="sysmsg"]//b').html()
-        message = message.replace('<b>', '').replace('</b>', '')
+        if self.g.doc.select('//div[@class="sysmsg"]//b').exists():
+            message = self.g.doc.select('//div[@class="sysmsg"]//b').text()
+        elif self.g.doc.select('//div[@class="sysmsg"]').exists():
+            message = self.g.doc.select('//div[@class="sysmsg"]').text()
+        else:
+            message = ''
         return {
-            'message': message
+            'message': message.strip()
         }
 
     def _parse_clock(self):
