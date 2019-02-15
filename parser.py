@@ -26,7 +26,7 @@ main_url = urljoin(host, 'moscow/go/?{}'.format(urlencode({
     'mes': '',
 })))
 
-red_span_re = re.compile('<span style="color:red">([123]\+?|N)(:[^<]+)?</span>')
+red_span_re = re.compile(r'<span style="color:red">([123]\+?|N)(:[^<]+)?</span>')
 
 
 class Parser(object):
@@ -134,7 +134,7 @@ class Parser(object):
 
     def _parse_clock(self):
         for script_el in self.g.doc.select('//table//tr//td//script'):
-            for seconds in re.findall('setTimeout\(\'countDown\((\d+)\)\',', script_el.html(), flags=re.I):
+            for seconds in re.findall(r"setTimeout\('countDown\((\d+)\)',", script_el.html(), flags=re.I):
                 try:
                     seconds = int(seconds)
                 except TypeError:
@@ -166,7 +166,7 @@ class Parser(object):
 
         html = self.g.doc.body.decode('cp1251')
 
-        level_number_list = list(re.findall('levelNumberBegin-->(\d+)\<', html)) + list(re.findall('Задание (\d+)', html))
+        level_number_list = list(re.findall(r'levelNumberBegin-->(\d+)<', html)) + list(re.findall(r'Задание (\d+)', html))
         if level_number_list:
             level = int(level_number_list[0])
         else:

@@ -9,8 +9,8 @@ from raven import Client
 from parser import Parser
 from views import sector_text, KoImg
 
-CORD_RE = '(\d{2}[\.,]\d{3,})'
-STANDARD_CODE_PATTERN = '\d*[dr]\d*[dr]\d*'
+CORD_RE = r'(\d{2}[\.,]\d{3,})'
+STANDARD_CODE_PATTERN = r'\d*[dr]\d*[dr]\d*'
 
 HELP_TEXT = '''
 /status - общая информация о подключении к движку. Используйте ее, чтобы понять, авторизованы ли вы и установлен ли пин.
@@ -135,7 +135,7 @@ class DzrBot(Bot):
         self.sendMessage(chat_id, "Режим парсинга движка: {}".format("Включен" if self.parse else "Выключен"))
 
     def on_cookie(self, chat_id, text, msg):
-        for cookie in re.findall('(\w{32})', text):
+        for cookie in re.findall(r'(\w{32})', text):
             cookie = cookie.upper()
             self.parser.set_cookie(cookie)
             self.set_data('cookie', cookie)
@@ -219,7 +219,7 @@ class DzrBot(Bot):
         data = self.get_data()
         text = text.replace('/sleep_seconds', '').strip()
         if text:
-            text = re.sub('\D', '', text)
+            text = re.sub(r'\D', '', text)
             try:
                 result = int(text)
             except (ValueError, TypeError):
