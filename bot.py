@@ -4,6 +4,7 @@ from telepot import Bot
 import settings
 import re
 import time
+from io import BytesIO
 from raven import Client
 
 from parser import Parser
@@ -346,7 +347,7 @@ class DzrBot(Bot):
         for sector in self.parser.table_sector.all():
             ko_list = [x['ko'] for x in self.parser.table_code.find(sector_id=sector['id'])]
             ko_img = KoImg(ko_list=ko_list)
-            self.sendPhoto(channel_id, ('ko.png', ko_img.content))
+            self.sendPhoto(channel_id, ('ko.png', BytesIO(ko_img.content)))
 
     def get_data(self):
         return self.parser.table_bot.find_one(**{'token': settings.TOKEN})
