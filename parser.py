@@ -72,9 +72,9 @@ class Parser(object):
         self.g.go(auth_url)
         if not (self.g.doc.select(b'.//*[@name="login"]').exists() and self.g.doc.select(b'.//*[@name="password"]').exists()):
             return False
-        self.g.doc.set_input('login', login)
-        self.g.doc.set_input('password', password)
-        self.g.doc.submit()
+        self.g.set_input('login', login)
+        self.g.set_input('password', password)
+        self.g.submit()
         html = self.g.doc.body.decode('cp1251')
         if 'Ошибка авторизации' in html:
             return False
@@ -92,8 +92,8 @@ class Parser(object):
         self.g.go(main_url)
         if code is not None:
             if self.g.doc.select(b'.//*[@name="cod"]').exists():
-                self.g.doc.set_input('cod', code)
-                self.g.doc.submit()
+                self.g.set_input('cod', code)
+                self.g.submit()
 
         if self.write_log_files:
             dir_1 = "./log/{}".format(n.strftime("%H"))
