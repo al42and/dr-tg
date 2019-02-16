@@ -272,25 +272,6 @@ class BotTestCase(TestCase):
         with self.assertRaises(Exception):
             self.bot.on_chat_message(self._new_message_dict('/test_error'))
 
-    def test_pin(self):
-        """
-        аутентификация через pin
-        """
-        self.bot.set_data('pin', '')
-
-        self.bot.on_chat_message(self._new_message_dict('/pin'))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', "Пин отсутствует")
-        self.bot.sendMessage.reset_mock()
-
-        self.bot.on_chat_message(self._new_message_dict('/pin moscow_cap:123456'))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', "Пин установлен")
-        self.bot.sendMessage.reset_mock()
-        self.assertEqual(self.bot.get_data().get('pin'), "moscow_cap:123456")
-
-        self.bot.on_chat_message(self._new_message_dict('/pin'))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', "Пин есть: moscow_cap:123456")
-        self.bot.sendMessage.reset_mock()
-
     def test_bool_params(self):
         """
         установка bool параметров

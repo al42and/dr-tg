@@ -30,7 +30,6 @@ HELP_TEXT = '''
 ADMIN_HELP_TEXT = '''
 /auth - авторизация через логин пароль. Использовать так: "/auth login parol". Используйте этот метод авторизации, если у вас есть отдельный аккаунта для бота.
 /cookie - установка авторизационной куки dozorSiteSession. Использовать так: "/cookie KTerByfGopF5dSgFjkl07x8v". Используйте этот метод авторизации, если у вас нет отдельного аккаунта для бота и вы используйте один аккаунт как для бота, так и в браузере.
-/pin - устанавливает пин для доступа в игру. Использовать так: "/pin moscow_captain:123456", где moscow_captain и 123456 - данные, выдаваемые организаторами.
 '''
 
 HELP_TEXT += ADMIN_HELP_TEXT
@@ -55,7 +54,6 @@ class DzrBot(Bot):
         (r'^/get_chat_id', 'on_get_chat_id'),
         (r'^/parse', 'on_parse'),
         (r'^/pattern', 'on_pattern'),
-        (r'^/pin', 'on_pin'),
         (r'^/sleep_seconds', 'on_sleep_seconds'),
         (r'^/status', 'on_status'),
         (r'^/test_error', 'on_test_error'),
@@ -99,10 +97,6 @@ class DzrBot(Bot):
         cookie = data.get('cookie')
         if cookie:
             self.parser.set_cookie(cookie)
-
-        pin = data.get('pin')
-        if pin:
-            self.parser.set_pin(pin)
 
     def on_help(self, chat_id, text, msg):
         self.sendMessage(chat_id, HELP_TEXT)
@@ -167,20 +161,6 @@ class DzrBot(Bot):
 
     def on_img(self, chat_id, text, msg):
         self.send_ko_img(chat_id)
-
-    def on_pin(self, chat_id, text, msg):
-        text = text.replace('/pin', '').strip()
-        if text:
-            self.parser.set_pin(text)
-            self.set_data('pin', text)
-            self.sendMessage(chat_id, "Пин установлен")
-        else:
-            data = self.get_data()
-            pin = data.get('pin')
-            if pin:
-                self.sendMessage(chat_id, "Пин есть: {}".format(pin))
-            else:
-                self.sendMessage(chat_id, "Пин отсутствует")
 
     def on_pattern(self, chat_id, text, msg):
         text = text.replace('/pattern', '').strip()

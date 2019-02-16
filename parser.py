@@ -84,9 +84,6 @@ class Parser(object):
             self.table_cookies.insert(cookie_dict)
         return True
 
-    def set_pin(self, userpwd):
-        self.g.setup(userpwd=userpwd)
-
     @throttle(seconds=2)
     def fetch(self, code=None):
         """Загружает страницу движка"""
