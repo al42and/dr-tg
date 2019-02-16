@@ -8,7 +8,8 @@ aiohttp==3.5.4            # via telepot
 alembic==1.0.7            # via dataset
 async-timeout==3.0.1      # via aiohttp
 attrs==18.2.0             # via aiohttp
-chardet==3.0.4            # via aiohttp
+banal==0.4.2              # via normality
+chardet==3.0.4            # via aiohttp, normality
 dataset==0.6.4
 defusedxml==0.5.0         # via grab
 grab==0.6.41
@@ -18,15 +19,18 @@ lxml==4.3.1               # via grab, selection
 mako==1.0.7               # via alembic
 markupsafe==1.1.0         # via mako
 multidict==4.5.2          # via aiohttp, yarl
+normality==1.0.0          # via dataset
 pillow==5.4.1
-psycopg2==2.7.7
+psycopg2==2.7.7 --no-binary psycopg2
 pycurl==7.43.0.1          # via grab
+pyicu==2.2                # via normality
 python-dateutil==2.8.0    # via alembic
 python-editor==1.0.4      # via alembic
 pytils==0.3               # via weblib
+pyyaml==3.13              # via dataset
 raven==6.10.0
 selection==0.0.14         # via grab
-six==1.12.0               # via dataset, grab, python-dateutil, selection, user-agent, weblib
+six==1.12.0               # via banal, dataset, grab, normality, python-dateutil, selection, user-agent, weblib
 sqlalchemy==1.2.17        # via alembic, dataset
 telepot==12.7
 typing-extensions==3.7.2  # via aiohttp
