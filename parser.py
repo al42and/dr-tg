@@ -1,4 +1,5 @@
 from datetime import datetime
+import threading
 import time
 import os
 import codecs
@@ -6,6 +7,7 @@ from urllib.parse import urlencode, urljoin
 
 import dataset
 from grab.base import Grab
+from http.cookiejar import CookieJar
 import re
 
 import settings
@@ -33,8 +35,10 @@ class Parser(object):
     write_log_files = False
 
     def __init__(self):
-        self.g = Grab()
-        self.g.setup(timeout=100)
+        # We use @property to dynamically create new instances of Grab for each thread
+        self._gs = dict()
+        # But they all are patched to use same cookie jar (http.cookiejar.CookieJar is thread safe)
+        self._common_grab_cookiejar = CookieJar()
         self.db = dataset.connect(settings.DATASET)
 
         self.table_code = self.db['code']
@@ -56,6 +60,18 @@ class Parser(object):
                 self.g.cookies.set(**cookie_dict)
             except ValueError:
                 pass
+
+    @property
+    def g(self):
+        tid = threading.current_thread()
+        try:
+            return self._gs[tid]
+        except KeyError:
+            g = Grab()
+            g.setup(timeout=100)
+            g.cookies.cookiejar = self._common_grab_cookiejar
+            self._gs[tid] = g
+            return g
 
     def set_cookie(self, cookie):
         self.g.cookies.set(
