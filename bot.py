@@ -130,7 +130,7 @@ class DzrBot(Bot):
         self.sendMessage(chat_id, "Режим парсинга движка: {}".format("Включен" if self.parse else "Выключен"))
 
     def on_cookie(self, chat_id, text, msg):
-        for cookie in re.findall(r'(\w{32})', text):
+        for cookie in re.findall(r'(\w{24,32})', text):
             cookie = cookie.upper()
             self.parser.set_cookie(cookie)
             self.set_data('cookie', cookie)
