@@ -14,9 +14,9 @@ import settings
 
 from decorators import throttle
 
-host = 'http://classic.dzzzr.ru/'
-auth_url = urljoin(host, 'moscow/?section=anons&league=2')
-main_url = urljoin(host, 'moscow/go/?{}'.format(urlencode({
+host = 'http://classic.dzzzr.ru/{}/'.format(getattr(settings, 'CITY', 'moscow'))
+auth_url = urljoin(host, '?section=anons&league=2')
+main_url = urljoin(host, 'go/?{}'.format(urlencode({
     'nostat': 'on',
     'notext': '',
     'notags': '',
