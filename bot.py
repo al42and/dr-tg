@@ -302,6 +302,7 @@ class DzrBot(Bot):
             method = getattr(self, method_str, None)
             if method is not None and re.search(pattern, text):
                 method(chat_id, text, msg)
+                return
 
         # парсинг сообщения на наличие кодов.
         if self.type and 2 < len(text) < 100:

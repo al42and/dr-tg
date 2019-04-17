@@ -60,16 +60,16 @@ class BotTestCase(TestCase):
     def test_code_pattern(self):
         self.assertEqual(self.bot.code_pattern, None)
         self.bot.on_chat_message(self._new_message_dict('/pattern ['))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Шаблон кода не установлен')
+        self.bot.sendMessage.assert_called_once_with('CHAT_ID', 'Шаблон кода не установлен')
         self.bot.sendMessage.reset_mock()
 
-        self.bot.on_chat_message(self._new_message_dict('/pattern \w+\d{2}'))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Шаблон кода установлен: \w+\d{2}')
+        self.bot.on_chat_message(self._new_message_dict(r'/pattern \w+\d{2}'))
+        self.bot.sendMessage.assert_called_once_with('CHAT_ID', r'Шаблон кода установлен: \w+\d{2}')
         self.bot.sendMessage.reset_mock()
-        self.assertEqual(self.bot.code_pattern, "\w+\d{2}")
+        self.assertEqual(self.bot.code_pattern, r'\w+\d{2}')
 
         self.bot.on_chat_message(self._new_message_dict('/pattern'))
-        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Шаблон кода: \w+\d{2}')
+        self.bot.sendMessage.assert_any_call('CHAT_ID', r'Шаблон кода: \w+\d{2}')
         self.bot.sendMessage.reset_mock()
 
         self.bot.on_chat_message(self._new_message_dict('/pattern standart'))
@@ -81,10 +81,14 @@ class BotTestCase(TestCase):
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'Шаблон кода: стандартный')
         self.bot.sendMessage.reset_mock()
 
+        # We should ignore the message with the pattern even if it matches
+        self.bot.on_chat_message(self._new_message_dict('/pattern [a-z]+'))
+        self.bot.sendMessage.assert_called_once_with('CHAT_ID', r'Шаблон кода установлен: [a-z]+')
+
     def test_code_with_pattern(self):
         self.set_html('pages/code_1.html')
         self.parser._parse_message = Mock(return_value={'message': 'код не принят'})
-        self.bot.code_pattern = "\w+\d{2}"
+        self.bot.code_pattern = r'\w+\d{2}'
         self.bot.on_chat_message(self._new_message_dict('Бла бла бла песок98. Блаблабла', message_id=321))
         self.bot.sendMessage.assert_any_call('CHAT_ID', '❌ песок98 : код не принят. Таймер: 01:27', reply_to_message_id=321)
 
