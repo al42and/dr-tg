@@ -136,10 +136,14 @@ class Parser(object):
 
     def _parse_message(self):
         if not self.g.doc.select('//div[@class="sysmsg"]//b').exists():
-            return {
-                'message': ''
-            }
-        message = self.g.doc.select('//div[@class="sysmsg"]//b').html()
+            if not self.g.doc.select('//div[@class="sysmsg"]').exists():
+                return {
+                    'message': ''
+                }
+            else:
+                message = self.g.doc.select('//div[@class="sysmsg"]').text()
+        else:
+            message = self.g.doc.select('//div[@class="sysmsg"]//b').html()
         message = message.replace('<b>', '').replace('</b>', '').strip()
         return {
             'message': message
