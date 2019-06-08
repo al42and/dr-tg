@@ -3,9 +3,11 @@ import threading
 import time
 import os
 import codecs
+import json
 from urllib.parse import urlencode, urljoin
 
 import dataset
+import requests
 from grab.base import Grab
 from http.cookiejar import CookieJar
 import re
@@ -46,6 +48,8 @@ class Parser(object):
         self.table_tip = self.db['tip']
         self.table_cookies = self.db['cookies']
         self.table_bot = self.db['bot']
+        self.auth_cookie = None
+        self.use_api = getattr(settings, 'API', False)
 
         if self.table_bot.find_one(**{'token': settings.TOKEN}) is None:
             self.table_bot.insert({
@@ -80,6 +84,7 @@ class Parser(object):
             domain='.dzzzr.ru',
             path='/',
         )
+        self.auth_cookie = cookie
 
     def auth(self, login, password):
         """Авторизация на сайте дозора"""
@@ -104,6 +109,19 @@ class Parser(object):
     def fetch(self, code=None):
         """Загружает страницу движка"""
         n = datetime.utcnow()
+
+        if self.use_api and code is not None:
+            response = requests.post(
+                urljoin(host, '/go/?api=true'), dict(
+                    s=self.auth_cookie,
+                    action='entcod',
+                    cod=code,
+                ))
+            if not response:
+                raise RuntimeError(repr(response))
+            response = json.loads(response.content)
+            print(host, response)
+            code = None
 
         self.g.go(main_url)
         if code is not None:

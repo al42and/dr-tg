@@ -4,3 +4,4 @@ Pillow
 psycopg2
 raven
 telepot
+requests
