@@ -145,6 +145,17 @@ class BotTestCase(TestCase):
         self.bot.on_chat_message(self._new_message_dict('/ НЕСТАНДАРТНЫЙКОД1', message_id=321))
         self.bot.sendMessage.assert_any_call('CHAT_ID', '❌ нестандартныйкод1 : код не принят. Таймер: 01:27', reply_to_message_id=321)
 
+    def test_code_empty_dot(self):
+        """
+        Нестандартный код пишется через точку, но просто точка игнорируется
+        """
+        self.set_html('pages/code_1.html')
+        self.parser._parse_message = Mock(return_value={'message': 'код не принят'})
+        self.bot.on_chat_message(self._new_message_dict('.', message_id=321))
+        self.bot.sendMessage.assert_not_called()  # Ignore "." message
+        self.bot.on_chat_message(self._new_message_dict('.НЕСТАНДАРТНЫЙКОД1', message_id=322))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', '❌ нестандартныйкод1 : код не принят. Таймер: 01:27', reply_to_message_id=322)
+
     def test_new_level(self):
         """Если наступает новый уровень, то бот должен послать об этом сообщение в канал"""
         self.set_html('pages/tip_1.html')
@@ -252,7 +263,6 @@ class BotTestCase(TestCase):
         self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/set dont_notify_bonus off'})
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'set dont_notify_bonus off')
         self.assertEqual(self.bot.dont_notify_bonus, False)
-
 
     def test_clock(self):
         self.set_html('pages/code_1.html')
@@ -377,7 +387,45 @@ class BotTestCase(TestCase):
         self.set_html('pages/code_1.html')
         self.parser.parse()
         self.bot.on_chat_message(self._new_message_dict('/ko'))
-        self.assertTrue(True)
+        self.bot.sendMessage.assert_any_call(
+            'CHAT_ID',
+            'основные коды\n'
+            '```\n'
+            ' 1 3   V    11 1+       \n'
+            ' 2 2   V    12 1   V    \n'
+            ' 3 3   V    13 1+  V    \n'
+            ' 4 2   V    14 1   V    \n'
+            ' 5 2   V    \n'
+            ' 6 1   V    \n'
+            ' 7 1   V    \n'
+            ' 8 2        \n'
+            ' 9 1   V    \n'
+            '10 1+       \n'
+            '```',
+            parse_mode='Markdown',
+        )
+
+    def test_ko_short(self):
+        self.set_html('pages/code_1.html')
+        self.parser.parse()
+        self.bot.on_chat_message(self._new_message_dict('?'))
+        self.bot.sendMessage.assert_any_call(
+            'CHAT_ID',
+            'основные коды\n'
+            '```\n'
+            ' 1 3   V    11 1+       \n'
+            ' 2 2   V    12 1   V    \n'
+            ' 3 3   V    13 1+  V    \n'
+            ' 4 2   V    14 1   V    \n'
+            ' 5 2   V    \n'
+            ' 6 1   V    \n'
+            ' 7 1   V    \n'
+            ' 8 2        \n'
+            ' 9 1   V    \n'
+            '10 1+       \n'
+            '```',
+            parse_mode='Markdown',
+        )
 
     def test_img(self):
         self.set_html('pages/code_1.html')

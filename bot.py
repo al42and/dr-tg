@@ -50,6 +50,7 @@ class DzrBot(Bot):
         (r'^/cookie', 'on_cookie'),
         (r'^/help', 'on_help'),
         (r'^/ko', 'on_ko'),
+        (r'^\?$', 'on_ko'),
         (r'^/img', 'on_img'),
         (r'^/link', 'on_link'),
         (r'^/get_chat_id', 'on_get_chat_id'),
@@ -310,6 +311,9 @@ class DzrBot(Bot):
             if text[:2] == '/ ':
                 text = text.replace('/ ', '')
                 self.process_one_code(chat_id, text, msg.get('message_id'))
+                return
+            if text[0] == '.':  # We have len(text) > 2 precondition, so "." messages will be ignored
+                self.process_one_code(chat_id, text[1:], msg.get('message_id'))
                 return
 
             if self.code_pattern is None:
