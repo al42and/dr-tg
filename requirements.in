@@ -1,6 +1,6 @@
-dataset
+dataset==0.6.4  # All later version, till at least 1.1.2, are broken
 grab
 Pillow
-psycopg2
+psycopg2 --no-binary psycopg2
 raven
 telepot
