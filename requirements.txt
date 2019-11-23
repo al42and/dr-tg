@@ -12,7 +12,7 @@ async-timeout==3.0.1      # via aiohttp
 attrs==19.3.0             # via aiohttp
 banal==0.4.2              # via normality
 chardet==3.0.4            # via aiohttp, normality
-dataset==0.6.4
+dataset==1.1.2
 defusedxml==0.6.0         # via grab
 grab==0.6.41
 idna-ssl==1.1.0           # via aiohttp
