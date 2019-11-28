@@ -1,6 +1,6 @@
 import logging
 from grab.error import GrabTimeoutError
-from telepot import Bot
+import telepot
 import settings
 import re
 import time
@@ -9,6 +9,7 @@ from raven import Client
 
 from parser import Parser
 from views import sector_text, KoImg
+from tracker import send_location
 
 CORD_RE = r'(\d{2}[\.,]\d{3,})'
 STANDARD_CODE_PATTERN = r'\d*[dr]\d*[dr]\d*'
@@ -36,10 +37,11 @@ ADMIN_HELP_TEXT = '''
 HELP_TEXT += ADMIN_HELP_TEXT
 
 
-class DzrBot(Bot):
+class DzrBot(telepot.Bot):
     parse = False  # Режим парсинга движка
     type = False  # Режим ввода кодов
-    maps = True
+    maps = True  # Отвечать картой на корды
+    tracker = False  # Посылать корды на онлайн-трекер
     sentry = None
     code_pattern = None
     sleep_seconds = 30
@@ -60,6 +62,7 @@ class DzrBot(Bot):
         (r'^/status', 'on_status'),
         (r'^/test_error', 'on_test_error'),
         (r'^/type', 'on_type'),
+        (r'^/tracker', 'on_tracker'),
         (r'^/set', 'on_set'),
     )
 
@@ -68,6 +71,7 @@ class DzrBot(Bot):
         'type',
         'parse',
         'maps',
+        'tracker'
     )
 
     def set_data(self, key, value):
@@ -119,6 +123,20 @@ class DzrBot(Bot):
         elif 'off' in text:
             self.set_data('type', False)
         self.sendMessage(chat_id, "Режим ввода кодов: {}".format("Включен" if self.type else "Выключен"))
+
+    def on_tracker(self, chat_id, text, msg):
+        if 'on' in text:
+            self.set_data('tracker', True)
+        elif 'off' in text:
+            self.set_data('tracker', False)
+        if self.tracker:
+            help_text = ' по адресу {}/'.format(settings.TRACKER)
+        else:
+            help_text = ''
+        self.sendMessage(chat_id, "Трекер: {status}{help}".format(
+            status=("Включен" if self.tracker else "Выключен"),
+            help=help_text
+        ))
 
     def on_get_chat_id(self, chat_id, text, msg):
         self.sendMessage(chat_id, "chat id: {}".format(msg['chat']['id']))
@@ -288,12 +306,17 @@ class DzrBot(Bot):
         self.sendMessage(chat_id, message)
 
     def _on_chat_message(self, msg):
-        text = msg.get('text')
-        # Не отвечает на нетекстовые сообщения
-        if not text:
+        content_type, _, _ = telepot.glance(msg)
+        if content_type == 'location':
+            return self._on_chat_message_location(msg)
+        elif 'text' in msg.keys():
+            return self._on_chat_message_text(msg)
+        else:  # Не отвечает на нетекстовые сообщения
             return
 
+    def _on_chat_message_text(self, msg):
         chat_id = msg['chat']['id']
+        text = msg['text']
         # Не отвечает, если задан параметр settings.CHAT_ID и он не соответствует сообщению.
         if hasattr(settings, 'CHAT_ID') and chat_id != settings.CHAT_ID:
             return
@@ -331,8 +354,21 @@ class DzrBot(Bot):
                         continue
                     self.process_one_code(chat_id, code, msg.get('message_id'))
 
+    def _on_chat_message_location(self, msg):
+        if self.tracker:
+            username = msg['from'].get('username', msg['from']['first_name'])
+            loc = msg['location']
+            logging.info("Got location {} from {}".format(str(loc), username))
+            try:
+                send_location(username, lat=loc['latitude'], long=loc['longitude'])
+            except RuntimeError as exc:
+                logging.exception(exc)
+            return
+
     def on_chat_message(self, msg):
-        if int(time.time()) - msg['date'] > 300:
+        message_too_old_limit = 300  # seconds
+        msg_date = msg.get('edit_date', msg['date'])  # Get "last modified" date
+        if int(time.time()) - msg_date > message_too_old_limit:
             return
         logging.debug('new message')
         if self.sentry:
