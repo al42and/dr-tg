@@ -465,6 +465,17 @@ class BotTestCase(TestCase):
         self.bot.on_chat_message(self._new_message_dict('/img'))
         self.assertEqual(self.bot.sendPhoto.called, True)
 
+    def test_expired_messages(self):
+        # Сообщение часовой давности
+        self.bot.on_chat_message(self._new_message_dict('/type on', date=time.time() - 3600))
+        self.bot.sendMessage.assert_not_called()
+        # Сообщение часовой давности, и примерно тогда же отредактированное
+        self.bot.on_chat_message(self._new_message_dict('/type on', date=time.time() - 3600, edit_date=time.time() - 3500))
+        self.bot.sendMessage.assert_not_called()
+        # Сообщение часовой давности, но недавно отредактированное
+        self.bot.on_chat_message(self._new_message_dict('/type on', date=time.time() - 3600, edit_date=time.time() - 2))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Режим ввода кодов: Включен')
+
 
 class ThrottleTestCase(TestCase):
     @throttle(seconds=2)
