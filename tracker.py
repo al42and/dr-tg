@@ -1,30 +1,30 @@
-import urllib.parse
-import urllib.request
+import requests
 import settings
+
+
+TIMEOUT = 2  # seconds
 
 
 def send_location(username, lat, long):
     if not settings.TRACKER:
         raise RuntimeError('Tracking server not configured')
 
-    query = dict(
+    data = dict(
         username=username,
         lat='{:.6f}'.format(lat),
         lon='{:.6f}'.format(long)
     )
 
-    # Not /set?, but /set/
-    url = '{base_url}/set/?{query}'.format(
-        base_url=settings.TRACKER,
-        query=urllib.parse.urlencode(query)
+    url = '{base_url}/api/set'.format(
+        base_url=settings.TRACKER
     )
 
-    with urllib.request.urlopen(url, timeout=2) as r:
-        code = r.getcode()
+    with requests.post(url, json=data, timeout=TIMEOUT) as r:
+        code = r.status_code
         if code != 200:
             raise RuntimeError('Wrong HTTP code from tracking server: {}'.format(code))
-        data = r.read()
-        if data.strip() == 'ok':
+        data = r.json()
+        if not data.get('error', False):
             return True
         else:
-            raise RuntimeError('Wrong data from tracking server: {}'.format(data))
+            raise RuntimeError('Got error from tracking server: {}'.format(data))

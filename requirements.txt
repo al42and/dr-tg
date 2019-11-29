@@ -11,12 +11,13 @@ alembic==1.3.1            # via dataset
 async-timeout==3.0.1      # via aiohttp
 attrs==19.3.0             # via aiohttp
 banal==0.4.2              # via normality
-chardet==3.0.4            # via aiohttp, normality
+certifi==2019.11.28       # via requests
+chardet==3.0.4            # via aiohttp, normality, requests
 dataset==0.6.4
 defusedxml==0.6.0         # via grab
 grab==0.6.41
 idna-ssl==1.1.0           # via aiohttp
-idna==2.8                 # via idna-ssl, yarl
+idna==2.8                 # via idna-ssl, requests, yarl
 lxml==4.4.1               # via grab, selection
 mako==1.1.0               # via alembic
 markupsafe==1.1.1         # via mako
@@ -30,13 +31,14 @@ python-editor==1.0.4      # via alembic
 pytils==0.3               # via weblib
 pyyaml==5.1.2             # via dataset
 raven==6.10.0
+requests==2.22.0
 selection==0.0.14         # via grab
 six==1.13.0               # via banal, dataset, grab, normality, python-dateutil, selection, user-agent, weblib
 sqlalchemy==1.3.11        # via alembic, dataset
 telepot==12.7
 text-unidecode==1.3       # via normality
 typing-extensions==3.7.4.1  # via aiohttp
-urllib3==1.25.7           # via telepot
+urllib3==1.25.7           # via requests, telepot
 user-agent==0.1.9         # via grab, weblib
 weblib==0.1.30            # via grab, selection
 yarl==1.3.0               # via aiohttp
