@@ -36,8 +36,14 @@ class BotTestCase(TestCase):
         self.bot.sentry = None
 
     @staticmethod
-    def _new_message_dict(text, **kwargs):
-        return dict(chat={'id': 'CHAT_ID'}, date=time.time(), text=text, **kwargs)
+    def _new_message_dict(text=None, **kwargs):
+        if text is not None:
+            kwargs['text'] = text
+        kwargs['chat'] = {'id': 'CHAT_ID', 'type': 'private'}
+        kwargs['from'] = {'first_name': 'Vasya', 'username': 'vasyan'}
+        if 'date' not in kwargs.keys():
+            kwargs['date'] = time.time()
+        return kwargs
 
     def tearDown(self):
         """Очищаем таблицы после прохождения каждого теста"""
@@ -242,27 +248,53 @@ class BotTestCase(TestCase):
         )
 
     def test_type(self):
-        self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/type'})
+        self.bot.on_chat_message(self._new_message_dict('/type'))
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'Режим ввода кодов: Включен')
 
         self.bot.sendMessage.reset_mock()
-        self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/type off'})
+        self.bot.on_chat_message(self._new_message_dict('/type off'))
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'Режим ввода кодов: Выключен')
 
         self.bot.sendMessage.reset_mock()
-        self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/type on'})
+        self.bot.on_chat_message(self._new_message_dict('/type on'))
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'Режим ввода кодов: Включен')
 
     def test_set(self):
         self.bot.sendMessage.reset_mock()
-        self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/set dont_notify_bonus on'})
+        self.bot.on_chat_message(self._new_message_dict('/set dont_notify_bonus on'))
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'set dont_notify_bonus on')
         self.assertEqual(self.bot.dont_notify_bonus, True)
 
         self.bot.sendMessage.reset_mock()
-        self.bot.on_chat_message({'chat': {'id': 'CHAT_ID'}, 'date': time.time(), 'text': '/set dont_notify_bonus off'})
+        self.bot.on_chat_message(self._new_message_dict('/set dont_notify_bonus off'))
         self.bot.sendMessage.assert_any_call('CHAT_ID', 'set dont_notify_bonus off')
         self.assertEqual(self.bot.dont_notify_bonus, False)
+
+    @patch('settings.TRACKER', 'http://tracker:8080')
+    @patch('bot.send_location')
+    def test_tracker_off_by_default(self, send_location_mock):
+        self.bot.on_chat_message(self._new_message_dict('/tracker'))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Трекер: Выключен')
+        self.bot.on_chat_message(self._new_message_dict(location={'lat': 45, 'lon': 55}))
+        send_location_mock.assert_not_called()
+
+    @patch('settings.TRACKER', 'http://tracker:8080')
+    @patch('bot.send_location')
+    def test_tracker_on(self, send_location_mock):
+        self.bot.on_chat_message(self._new_message_dict('/tracker on'))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Трекер: Включен по адресу http://tracker:8080/')
+        self.bot.on_chat_message(self._new_message_dict(location={'latitude': 45, 'longitude': 55}))
+        send_location_mock.assert_called_with('vasyan', lat=45, long=55)
+
+    @patch('settings.TRACKER', 'http://tracker:8080')
+    @patch('bot.send_location')
+    def test_tracker_off(self, send_location_mock):
+        self.bot.on_chat_message(self._new_message_dict('/tracker on'))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Трекер: Включен по адресу http://tracker:8080/')
+        self.bot.on_chat_message(self._new_message_dict('/tracker off'))
+        self.bot.sendMessage.assert_any_call('CHAT_ID', 'Трекер: Выключен')
+        self.bot.on_chat_message(self._new_message_dict(location={'lat': 45, 'lon': 55}))
+        send_location_mock.assert_not_called()
 
     def test_clock(self):
         self.set_html('pages/code_1.html')
