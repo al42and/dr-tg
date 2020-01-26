@@ -1,4 +1,4 @@
-dataset==0.6.4  # All later version, till at least 1.1.2, are broken
+dataset  # All later version, till at least 1.1.2, are broken
 grab
 Pillow
 psycopg2 --no-binary psycopg2
