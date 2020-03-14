@@ -105,7 +105,10 @@ def sector_text(sector):
     Вьюха списка KO в виде текста
     Принимает список кодов в формате [{'ko': '1', 'taken': True}, ...]
     """
-    code_list = sector['code_list']
+    try:
+        code_list = sorted(sector['code_list'], key=lambda x: x['metka'])
+    except KeyError:
+        code_list = sector['code_list']
     l = len(code_list)
     rows = 5 if l <= 10 else 10  # Сколько элементов в колонке.
     cols = 2  # Колонок всегда 2
