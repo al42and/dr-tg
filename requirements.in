@@ -1,4 +1,4 @@
-dataset  # All later version, till at least 1.1.2, are broken
+dataset
 grab
 Pillow
 psycopg2 --no-binary psycopg2
